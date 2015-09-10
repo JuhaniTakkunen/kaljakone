@@ -19,17 +19,20 @@ class Page(tk.Frame):
 class PageProduct(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        # luodaan painike
         frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'red')
         frame.pack(fill=tkinter.BOTH, expand=1)
 
+        # Load icons
         Page.beer = beer = tkinter.PhotoImage(file="beer.gif")
         Page.cider = cider = tkinter.PhotoImage(file="cider.gif")
         Page.settings = settings = tkinter.PhotoImage(file="settings.gif")
+
+        # Create buttons
         button1 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=beer, command=lambda: self.order("kalja"))
         button2 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=cider, command=lambda: self.order("siideri"))
         button3 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=settings, command=lambda: exit(1))
-        # lisätään painike ikkunaan
+
+        # Add buttons to frame
         button1.pack(side=tkinter.LEFT)
         button2.pack(side=tkinter.LEFT)
         button3.pack(side=tkinter.LEFT)
@@ -44,13 +47,9 @@ class PageProduct(Page):
 class PageQuantity(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        #label = tk.Label(self, text="This is page 2")
-        #label.pack(side="top", fill="both", expand=True)
         frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'cyan')
         self.quantity = 1
-
-        # frame.pack(fill=tkinter.BOTH, expand=1)
-        frame.grid()
+        frame.grid()  # This page works better with grind vs frame
 
         def increase_quantity():
             self.quantity += 1
@@ -79,17 +78,11 @@ class PageQuantity(Page):
         button3 = tkinter.Button(frame, width=7, height=6, text="+", font=("Helvetica", 16), command=increase_quantity)
         button3_empty = tkinter.Label(frame, width=7, height=6, text="", font=("Helvetica", 16))
 
-        '''
         # lisätään painike ikkunaan
-        button1.pack(side=tkinter.LEFT)
-        button2.pack(side=tkinter.LEFT)
-        button3.pack(side=tkinter.LEFT)
-        '''
         button1.grid(row=0, column=1)
         button2.grid(row=0, column=2)
         button3.grid(row=0, column=3)
         self.update()
-
 
     def order(self):
         if type(self.quantity) == int:
@@ -103,10 +96,7 @@ class PageQuantity(Page):
 class PageSendOrder(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        #label = tk.Label(self, text="This is page 3")
-        #label.pack(side="top", fill="both", expand=True)
         frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'black')
-
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
@@ -126,7 +116,7 @@ class PageSendOrder(Page):
             self.master.p5.show()
             self.update()
 
-class Page4(Page):
+class PageRegisterOk(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         label = tk.Label(self, text="REGISTER OK")
@@ -143,13 +133,12 @@ class Page4(Page):
         self.update()
 
 
-class Page5(Page):
+class PageRegisterFailed(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         label = tk.Label(self, text="REGISTER FAILED")
         label.pack(side="top", fill="both", expand=True)
         frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'red')
-
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
@@ -164,38 +153,45 @@ class MainView(tk.Frame):
         self.Order = google_api.Order()
 
         tk.Frame.__init__(self, *args, **kwargs)
+
+        # Create pages
         p1 = self.p1 = PageProduct(self)
         p2 = self.p2 = PageQuantity(self)
         p3 = self.p3 = PageSendOrder(self)
-        p4 = self.p4 = Page4(self)
-        p5 = self.p5 = Page5(self)
+        p4 = self.p4 = PageRegisterOk(self)
+        p5 = self.p5 = PageRegisterFailed(self)
 
+        # Create Frames
         buttonframe = tk.Frame(self)
         container = tk.Frame(self)
         buttonframe.pack(side="top", fill="x", expand=False)
         container.pack(side="top", fill="both", expand=True)
 
+        # Add pages
         p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p4.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p5.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
-        b1 = tk.Button(buttonframe, text="Page 1", command=lambda: p1.lift())
-        b2 = tk.Button(buttonframe, text="Page 2", command=lambda: p2.lift())
-        b3 = tk.Button(buttonframe, text="Page 3", command=lambda: p3.lift())
+        # Create top menu bar (for testing - removed in end product (?))
+        b1 = tk.Button(buttonframe, text="Product", command=lambda: p1.lift())
+        b2 = tk.Button(buttonframe, text="Quantity", command=lambda: p2.lift())
+        b3 = tk.Button(buttonframe, text="Confirm", command=lambda: p3.lift())
 
+        # Show buttons
         b1.pack(side="left")
         b2.pack(side="left")
         b3.pack(side="left")
 
+        # Show page
         p1.show()
 
 if __name__ == "__main__":
     root = tk.Tk()
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
-    root.wm_geometry("320x240")
+    root.wm_geometry("320x240")  # Junnus Raspberry pi resolution
     if platform.node() == "vadelma":
         root.attributes('-fullscreen', True)
     root.mainloop()
