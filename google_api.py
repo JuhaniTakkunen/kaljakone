@@ -10,7 +10,7 @@ class Order:
     def __init__(self):
         self.product = None
         self.quantity = None
-        self.userID = "Junnu"  # TODO: get this from fingerprint sensor
+        self.userID = "Unknown"  # TODO: get this from fingerprint sensor
 
     def send(self):
         return register_order(self)
@@ -34,10 +34,3 @@ def open_spreadsheet():
     gc = gspread.authorize(credentials)
     sht2 = gc.open_by_url('https://docs.google.com/spreadsheets/d/1sTuTq5U_kp0zuS32VVKr8_N70lUChA3c2Jewm3HWcEo/edit?usp=sharing')
     return sht2
-    '''
-    gss = gss_client.open('test-gspread')
-    worksheet = gss.sheet1
-    self.response.write(worksheet.acell('A1').value)
-    # -- /NEW --
-    '''
-
