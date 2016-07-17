@@ -1,16 +1,16 @@
 __author__ = 'juhani.takkunen'
-import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 import os
+import logging
 ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
 class Order:
     def __init__(self):
         self.product = None
         self.quantity = None
-        self.userID = "Unknown"  # TODO: get this from fingerprint sensor
+        self.userID = "Unknown"
 
     def send(self):
         return register_order(self)
@@ -18,11 +18,11 @@ class Order:
 def register_order(order):
     try:
         sheet = open_spreadsheet().sheet1
-        report_line = [time.strftime("%H:%M"),time.strftime("%Y%m%d"), order.userID, order.product, order.quantity]
+        report_line = [time.strftime("%H:%M"), time.strftime("%Y%m%d"), order.userID, order.product, order.quantity]
         sheet.append_row(report_line)
         return True
-    except Exception as error:
-        print(error)
+    except Exception:
+        logging.exception("Unknown exception")
         return False
 
 def open_spreadsheet():

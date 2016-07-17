@@ -8,6 +8,8 @@ except ImportError:
 import google_api
 import platform
 import os
+import logging
+logging.basicConfig()
 
 ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
@@ -41,7 +43,6 @@ class PageIdentify(Page):
         self.update()
 
     def identify(self, userID):
-        print("naat")
         self.master.Order.userID = userID
         self.master.p1.show()   # TODO: is master ok to use?
         self.update()
@@ -222,10 +223,15 @@ class MainView(tk.Frame):
         p0.show()
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    main = MainView(root)
-    main.pack(side="top", fill="both", expand=True)
-    root.wm_geometry("320x240")  # Junnus Raspberry pi resolution
-    if platform.node() == "vadelma":
-        root.attributes('-fullscreen', True)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        main = MainView(root)
+        main.pack(side="top", fill="both", expand=True)
+        root.wm_geometry("320x240")  # Junnus Raspberry pi resolution
+        if platform.node() == "vadelma":
+            root.attributes('-fullscreen', True)
+        root.mainloop()
+    except Exception:
+        logging.exception("Unkown exception in main loop")
+        logging.critical("Exit program after error")
+        exit(1)
