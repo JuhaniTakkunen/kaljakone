@@ -3,6 +3,8 @@ import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
+import os
+ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
 class Order:
     def __init__(self):
@@ -26,7 +28,7 @@ def register_order(order):
 def open_spreadsheet():
     # This bit of code is copy-pasted from the Internet!
     scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('kaljarobotti.json', scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(ROOT_DIRECTORY, 'kaljarobotti.json'), scope)
     gss_client = gspread.authorize(credentials)
 
     gc = gspread.authorize(credentials)

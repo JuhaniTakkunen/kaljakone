@@ -7,7 +7,9 @@ except ImportError:
     import Tkinter as tkinter
 import google_api
 import platform
+import os
 
+ROOT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -23,9 +25,9 @@ class PageIdentify(Page):
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # Load icons
-        Page.img_user1 = tkinter.PhotoImage(file="images/avatars/junnu.gif")
-        Page.img_user2 = tkinter.PhotoImage(file="images/avatars/opa.gif")
-        Page.img_user3 = tkinter.PhotoImage(file="images/avatars/random_girl.gif")
+        Page.img_user1 = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/avatars/junnu.gif"))
+        Page.img_user2 = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/avatars/opa.gif"))
+        Page.img_user3 = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/avatars/random_girl.gif"))
 
         # Create buttons
         button1 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=Page.img_user1, command=lambda: self.identify("Junnu"))
@@ -51,9 +53,9 @@ class PageProduct(Page):
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # Load icons
-        Page.beer = beer = tkinter.PhotoImage(file="beer.gif")
-        Page.cider = cider = tkinter.PhotoImage(file="cider.gif")
-        Page.settings = settings = tkinter.PhotoImage(file="settings.gif")
+        Page.beer = beer = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/beer.gif"))
+        Page.cider = cider = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/cider.gif"))
+        Page.settings = settings = tkinter.PhotoImage(file=os.path.join(ROOT_DIRECTORY, "images/settings.gif"))
 
         # Create buttons
         button1 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=beer, command=lambda: self.order("kalja"))
