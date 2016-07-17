@@ -228,8 +228,8 @@ if __name__ == "__main__":
         main = MainView(root)
         main.pack(side="top", fill="both", expand=True)
         root.wm_geometry("320x240")  # Junnus Raspberry pi resolution
-        if platform.node() == "vadelma":
-            root.attributes('-fullscreen', True)
+        if platform.node() in ["vadelma", "raspberrypi"]:
+            root.attributes('-fullscreen', True)  # Fullscreen for RPi
         root.mainloop()
     except Exception:
         logging.exception("Unkown exception in main loop")
