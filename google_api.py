@@ -1,7 +1,7 @@
 __author__ = 'juhani.takkunen'
 import json
 import gspread
-from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 import time
 
 class Order:
@@ -16,7 +16,7 @@ class Order:
 def register_order(order):
     try:
         sheet = open_spreadsheet().sheet1
-        report_line = [time.strftime("%H:%M"),time.strftime("%Y%m%d"),order.userID, order.product, order.quantity]
+        report_line = [time.strftime("%H:%M"),time.strftime("%Y%m%d"), order.userID, order.product, order.quantity]
         sheet.append_row(report_line)
         return True
     except Exception as error:
@@ -25,10 +25,17 @@ def register_order(order):
 
 def open_spreadsheet():
     # This bit of code is copy-pasted from the Internet!
-    json_key = json.load(open('kaljarobotti.json'))
     scope = ['https://spreadsheets.google.com/feeds']
-    credentials = SignedJwtAssertionCredentials(json_key['client_email'], bytes(json_key['private_key'], 'utf-8'), scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('kaljarobotti.json', scope)
+    gss_client = gspread.authorize(credentials)
+
     gc = gspread.authorize(credentials)
     sht2 = gc.open_by_url('https://docs.google.com/spreadsheets/d/1sTuTq5U_kp0zuS32VVKr8_N70lUChA3c2Jewm3HWcEo/edit?usp=sharing')
     return sht2
+    '''
+    gss = gss_client.open('test-gspread')
+    worksheet = gss.sheet1
+    self.response.write(worksheet.acell('A1').value)
+    # -- /NEW --
+    '''
 

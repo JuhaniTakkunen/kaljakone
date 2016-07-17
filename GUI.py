@@ -16,10 +16,38 @@ class Page(tk.Frame):
     def show(self):
         self.lift()
 
+class PageIdentify(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg='blue')
+        frame.pack(fill=tkinter.BOTH, expand=1)
+
+        # Load icons
+        Page.img_user1 = tkinter.PhotoImage(file="images/avatars/junnu.gif")
+        Page.img_user2 = tkinter.PhotoImage(file="images/avatars/opa.gif")
+        Page.img_user3 = tkinter.PhotoImage(file="images/avatars/random_girl.gif")
+
+        # Create buttons
+        button1 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=Page.img_user1, command=lambda: self.identify("Junnu"))
+        button2 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=Page.img_user2, command=lambda: self.identify("Opa"))
+        button3 = tkinter.Button(frame, height=90, width=90, padx=5, pady=5, image=Page.img_user3, command=lambda: self.identify("Random Girl"))
+
+        # Add buttons to frame
+        button1.pack(side=tkinter.LEFT)
+        button2.pack(side=tkinter.LEFT)
+        button3.pack(side=tkinter.LEFT)
+        self.update()
+
+    def identify(self, userID):
+        print("naat")
+        self.master.Order.userID = userID
+        self.master.p1.show()   # TODO: is master ok to use?
+        self.update()
+
 class PageProduct(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'red')
+        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg='red')
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # Load icons
@@ -47,7 +75,7 @@ class PageProduct(Page):
 class PageQuantity(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'cyan')
+        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg = 'cyan')
         self.quantity = 1
         frame.grid()  # This page works better with grind vs frame
 
@@ -96,7 +124,7 @@ class PageQuantity(Page):
 class PageSendOrder(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'black')
+        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg = 'black')
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
@@ -126,7 +154,7 @@ class PageRegisterOk(Page):
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
-        button1 = tkinter.Button(frame, width=7, height=6, text="continue", font=("Helvetica", 16), command=self.master.p1.show)
+        button1 = tkinter.Button(frame, width=7, height=6, text="continue", font=("Helvetica", 16), command=self.master.p0.show)
 
         # lisätään painike ikkunaan
         button1.pack(side=tkinter.LEFT)
@@ -142,7 +170,7 @@ class PageRegisterFailed(Page):
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
-        button1 = tkinter.Button(frame, width=7, height=6, text="continue", font=("Helvetica", 16), command=self.master.p1.show)
+        button1 = tkinter.Button(frame, width=7, height=6, text="continue", font=("Helvetica", 16), command=self.master.p0.show)
 
         # lisätään painike ikkunaan
         button1.pack(side=tkinter.LEFT)
@@ -155,6 +183,7 @@ class MainView(tk.Frame):
         tk.Frame.__init__(self, *args, **kwargs)
 
         # Create pages
+        p0 = self.p0 = PageIdentify(self)
         p1 = self.p1 = PageProduct(self)
         p2 = self.p2 = PageQuantity(self)
         p3 = self.p3 = PageSendOrder(self)
@@ -168,6 +197,7 @@ class MainView(tk.Frame):
         container.pack(side="top", fill="both", expand=True)
 
         # Add pages
+        p0.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
@@ -175,17 +205,19 @@ class MainView(tk.Frame):
         p5.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Create top menu bar (for testing - removed in end product (?))
+        b0 = tk.Button(buttonframe, text="Identify", command=lambda: p0.lift())
         b1 = tk.Button(buttonframe, text="Product", command=lambda: p1.lift())
         b2 = tk.Button(buttonframe, text="Quantity", command=lambda: p2.lift())
         b3 = tk.Button(buttonframe, text="Confirm", command=lambda: p3.lift())
 
         # Show buttons
+        b0.pack(side="left")
         b1.pack(side="left")
         b2.pack(side="left")
         b3.pack(side="left")
 
         # Show page
-        p1.show()
+        p0.show()
 
 if __name__ == "__main__":
     root = tk.Tk()
