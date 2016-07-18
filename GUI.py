@@ -70,16 +70,20 @@ class PageProduct(Page):
         self.update()
 
     def order(self, product):
-        self.master.Order.product = product
+        self.master.Order.temp_product = product
         self.master.p2.show()   # TODO: is master ok to use?
         self.update()
 
+    def show(self):
+        self.master.Order.temp_product = None
+        self.lift()
 
 class PageQuantity(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg = 'cyan')
-        self.quantity = 1
+        self.quantity = None
+        self.counter_button = None
         frame.grid()  # This page works better with grind vs frame
 
         def increase_quantity():
@@ -102,39 +106,64 @@ class PageQuantity(Page):
                 button3.grid()
                 button3_empty.grid_remove()
 
+        def order():
+            assert type(self.quantity) == int
+            assert type(self.master.Order.products) == dict
+            self.master.Order.products[self.master.Order.temp_product] = self.quantity
+            button2["text"] = str(self.quantity) + "\n (valitse)"
+            self.master.p3.show()
+            self.update()
+
         # luodaan painike
         button1 = tkinter.Button(frame, width=7, height=6, text="-", font=("Helvetica", 16), command=decrease_quantity)
         button1_empty = tkinter.Label(frame, width=7, height=6, text="", font=("Helvetica", 16))
-        button2 = tkinter.Button(frame, width=7, height=6, text=str(self.quantity) + "\n (valitse)", font=("Helvetica", 16), command=self.order)
+        button2 = tkinter.Button(frame, width=7, height=6, text=str(self.quantity) + "\n (valitse)", font=("Helvetica", 16), command=order)
         button3 = tkinter.Button(frame, width=7, height=6, text="+", font=("Helvetica", 16), command=increase_quantity)
         button3_empty = tkinter.Label(frame, width=7, height=6, text="", font=("Helvetica", 16))
 
+        self.counter_button = button2
         # lisätään painike ikkunaan
         button1.grid(row=0, column=1)
         button2.grid(row=0, column=2)
         button3.grid(row=0, column=3)
         self.update()
 
-    def order(self):
-        if type(self.quantity) == int:
-            print("add: ", self.quantity)
-            self.master.Order.quantity = self.quantity
-        else:
-            exit(1)
-        self.master.p3.show()
-        self.update()
+    def show(self):
+        self.quantity = self.master.Order.products.get(self.master.Order.temp_product, 1)
+        self.counter_button["text"] = str(self.quantity) + "\n (valitse)"
+        self.lift()
 
 class PageSendOrder(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg = 'black')
+        frame = tkinter.Frame(self, borderwidth=5, padx=10, pady=20, bg='black')
+        frame.pack(fill=tkinter.BOTH, expand=1)
+
+        # listaa valmiit tilaukset
+        self.label = tk.Label(self, text="", bg='white')
+        self.label.pack(side="top", fill="both", expand=True)
+
+        # uusi frame
+        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'red')
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
-        button1 = tkinter.Button(frame, width=14, height=6, text="Lähetä tilaus", font=("Helvetica", 16), command=lambda: self.send_order())
+        button0 = tkinter.Button(frame, width=7, height=6, text="Peruuta\n\nCancel", font=("Helvetica", 16), bg="red", command=lambda: self.cancel())
+        button1 = tkinter.Button(frame, width=7, height=6, text="Lisää/\nmuuta\n\nadd", font=("Helvetica", 16), bg="yellow", command=lambda: self.add_product())
+        button2 = tkinter.Button(frame, width=7, height=6, text="Lähetä\n\nsend", font=("Helvetica", 16), bg="green", command=lambda: self.send_order())
 
         # lisätään painike ikkunaan
+        button0.pack(side=tkinter.LEFT)
         button1.pack(side=tkinter.LEFT)
+        button2.pack(side=tkinter.LEFT)
+        self.update()
+
+    def cancel(self):
+        self.master.p0.show()
+        self.update()
+
+    def add_product(self):
+        self.master.p1.show()
         self.update()
 
     def send_order(self):
@@ -147,17 +176,24 @@ class PageSendOrder(Page):
             self.master.p5.show()
             self.update()
 
+    def show(self):
+        order_text = "Vahvista tilaus: \n"
+        for prod, qty in self.master.Order.products.items():
+            order_text = order_text + prod + ": " + str(qty) + "\n"
+        self.label["text"] = order_text
+        self.lift()
+
 class PageRegisterOk(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        label = tk.Label(self, text="REGISTER OK")
+        label = tk.Label(self, text="Tuotteen kirjaus onnistui.")
         label.pack(side="top", fill="both", expand=True)
-        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'green')
+        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'blue')
 
         frame.pack(fill=tkinter.BOTH, expand=1)
 
         # luodaan painike
-        button1 = tkinter.Button(frame, width=7, height=6, text="continue", font=("Helvetica", 16), command=self.master.p0.show)
+        button1 = tkinter.Button(frame, width=7, height=6, text="Jatka...", font=("Helvetica", 16), bg="green", command=self.master.p0.show)
 
         # lisätään painike ikkunaan
         button1.pack(side=tkinter.LEFT)
@@ -186,12 +222,12 @@ class MainView(tk.Frame):
         tk.Frame.__init__(self, *args, **kwargs)
 
         # Create pages
-        p0 = self.p0 = PageIdentify(self)
-        p1 = self.p1 = PageProduct(self)
-        p2 = self.p2 = PageQuantity(self)
-        p3 = self.p3 = PageSendOrder(self)
-        p4 = self.p4 = PageRegisterOk(self)
-        p5 = self.p5 = PageRegisterFailed(self)
+        self.p0 = PageIdentify(self)
+        self.p1 = PageProduct(self)
+        self.p2 = PageQuantity(self)
+        self.p3 = PageSendOrder(self)
+        self.p4 = PageRegisterOk(self)
+        self.p5 = PageRegisterFailed(self)
 
         # Create Frames
         buttonframe = tk.Frame(self)
@@ -200,18 +236,18 @@ class MainView(tk.Frame):
         container.pack(side="top", fill="both", expand=True)
 
         # Add pages
-        p0.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p4.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p5.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p0.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p4.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.p5.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Create top menu bar (for testing - removed in end product (?))
-        b0 = tk.Button(buttonframe, text="Identify", command=lambda: p0.lift())
-        b1 = tk.Button(buttonframe, text="Product", command=lambda: p1.lift())
-        b2 = tk.Button(buttonframe, text="Quantity", command=lambda: p2.lift())
-        b3 = tk.Button(buttonframe, text="Confirm", command=lambda: p3.lift())
+        b0 = tk.Button(buttonframe, text="Identify", command=lambda: self.p0.lift())
+        b1 = tk.Button(buttonframe, text="Product", command=lambda: self.p1.lift())
+        b2 = tk.Button(buttonframe, text="Quantity", command=lambda: self.p2.lift())
+        b3 = tk.Button(buttonframe, text="Confirm", command=lambda: self.p3.lift())
 
         # Show buttons
         b0.pack(side="left")
@@ -220,7 +256,7 @@ class MainView(tk.Frame):
         b3.pack(side="left")
 
         # Show page
-        p0.show()
+        self.p0.show()
 
 if __name__ == "__main__":
     try:
