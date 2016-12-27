@@ -1,20 +1,26 @@
 # -*- coding: utf-8 -*-
-try:
-    import tkinter as tk
-    import tkinter
-except ImportError:
-    import Tkinter as tk
-    import Tkinter as tkinter
+
+import Tkinter as tk
+import Tkinter as tkinter
 import google_api
 import platform
+import threading
+import urllib.request
+import time
 
 
+
+# https://docs.google.com/spreadsheets/d/1sTuTq5U_kp0zuS32VVKr8_N70lUChA3c2Jewm3HWcEo/edit?usp=sharing
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
 
     def show(self):
         self.lift()
+
+    def hide(self):
+        self.lower()
+
 
 class PageProduct(Page):
     def __init__(self, *args, **kwargs):
@@ -93,6 +99,7 @@ class PageQuantity(Page):
         self.master.p3.show()
         self.update()
 
+
 class PageSendOrder(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
@@ -115,6 +122,7 @@ class PageSendOrder(Page):
             print("result failed: ", result)
             self.master.p5.show()
             self.update()
+
 
 class PageRegisterOk(Page):
     def __init__(self, *args, **kwargs):
@@ -148,6 +156,23 @@ class PageRegisterFailed(Page):
         button1.pack(side=tkinter.LEFT)
         self.update()
 
+
+class PageNoInternet(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        label = tk.Label(self, text="We are out of internets!")
+        label.pack(side="top", fill="both", expand=True)
+        frame = tkinter.Frame(self, borderwidth=5,padx=10, pady=20, bg = 'red')
+        frame.pack(fill=tkinter.BOTH, expand=1)
+
+        # luodaan painike
+        button1 = tkinter.Button(frame, width=7, height=6, text="go to start", font=("Helvetica", 16), command=self.master.p1.show)
+
+        # lisätään painike ikkunaan
+        button1.pack(side=tkinter.LEFT)
+        self.update()
+
+
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
         self.Order = google_api.Order()
@@ -160,6 +185,7 @@ class MainView(tk.Frame):
         p3 = self.p3 = PageSendOrder(self)
         p4 = self.p4 = PageRegisterOk(self)
         p5 = self.p5 = PageRegisterFailed(self)
+        p6 = self.p6 = PageNoInternet(self)
 
         # Create Frames
         buttonframe = tk.Frame(self)
@@ -173,6 +199,7 @@ class MainView(tk.Frame):
         p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p4.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         p5.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p6.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Create top menu bar (for testing - removed in end product (?))
         b1 = tk.Button(buttonframe, text="Product", command=lambda: p1.lift())
@@ -187,6 +214,57 @@ class MainView(tk.Frame):
         # Show page
         p1.show()
 
+        def check_thread():
+            if self.mt.isAlive():
+                # print("alive")
+                internet_ok = self.after(600, check_thread)
+                if internet_ok:
+                    pass
+                else:
+                    print("not ok")
+            else:
+                print("dead")
+                self.mt.start()
+
+
+        # Run web-test
+        self.mt = MyThread(error_page=p6)
+        self.mt.daemon = True
+        self.mt.start()
+        check_thread()
+        p6.show()
+
+
+class MyThread(threading.Thread):
+
+    def __init__(self, error_page):
+        threading.Thread.__init__(self)
+        self.connection = threading.Event()
+        self.counter = 0
+        self.error_page = error_page
+
+    def run(self):
+        while True:
+            self.counter += 1
+            self.connection.clear()
+            try:
+
+                url = 'http://www.google.fi'
+
+                response = urllib.request.urlopen(url, timeout=20)
+                self.connection.set()
+            except urllib.request.URLError as err:
+                self.connection.clear()
+                pass
+            finally:
+                if self.connection.is_set():
+                    self.error_page.hide()
+                else:
+                    self.error_page.show()
+                time.sleep(1)
+
+        print("fail3")
+
 if __name__ == "__main__":
     root = tk.Tk()
     main = MainView(root)
@@ -195,3 +273,4 @@ if __name__ == "__main__":
     if platform.node() == "vadelma":
         root.attributes('-fullscreen', True)
     root.mainloop()
+
